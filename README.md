@@ -149,10 +149,12 @@ enabled_layouts splits:split_axis=horizontal,...
 | `Command+0` | Reset font size |
 | `Command+Option+Left` / `Command+Option+Right` | Previous / next tab |
 | `Command+Shift+Left` / `Command+Shift+Right` | Move the current tab left / right |
+| `Control+Shift+Left` / `Control+Shift+Right` | Move focus to the pane on the left / right |
+| `Control+Shift+Up` / `Control+Shift+Down` | Move focus to the pane above / below |
 
 The text-editing shortcuts send the corresponding readline/Emacs control
 sequences, so they work in Zsh and in applications that use readline-style key
-bindings.
+bindings. The pane-focus shortcuts reproduce WezTerm's defaults.
 
 ## Customization
 
@@ -164,6 +166,18 @@ background_opacity 0.75
 initial_window_width 110c
 initial_window_height 30c
 ```
+
+The tab bar uses Kitty's `slant` style at the bottom:
+
+```conf
+tab_bar_style slant
+tab_bar_edge bottom
+tab_bar_min_tabs 2
+```
+
+Change `tab_bar_edge` to `top`, `left`, or `right` to move it. The included dark
+tab palette can be adjusted with the `*_tab_background` and `*_tab_foreground`
+settings in `kitty.conf`.
 
 To change the inactive-pane appearance, edit
 `shaders/dim-inactive-windows.pipeline`:
