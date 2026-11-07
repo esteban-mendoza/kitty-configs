@@ -1,0 +1,16 @@
+startgroup
+    # Efecto estático: solo redibujar cuando cambie el contenido o el foco.
+    animation_step 0
+
+    # Atenuar los paneles inactivos sin iluminar el activo.
+    var float HIGHLIGHT_INTENSITY = 0
+    var float BORDER_WIDTH = 0
+    var float INACTIVE_DIM = 0.55
+
+    # No atenuar la barra de pestañas ni el marco del panel activo.
+    var bool DIM_CENTRAL_AREA_ONLY = true
+    var bool INCLUDE_WINDOW_PADDING = true
+
+    # focus-highlight reduce el brillo; inactive-saturation aplica el 75 %.
+    shaders focus-highlight inactive-saturation
+endgroup
