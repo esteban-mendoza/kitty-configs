@@ -54,6 +54,9 @@ git clone https://github.com/esteban-mendoza/kitty-configs.git "$HOME/kitty-conf
 The commands below use the path `$HOME/kitty-configs`. If you clone the
 repository to a different location, change the paths.
 
+The installation copies all files into `~/.config/kitty`. Nothing loads files
+from the repository, so you can delete the repository after you install.
+
 ### 2. Back up your current Kitty configuration
 
 In Terminal:
@@ -62,6 +65,8 @@ In Terminal:
 mkdir -p "$HOME/.config/kitty/backup"
 cp -p "$HOME/.config/kitty/kitty.conf" "$HOME/.config/kitty/backup/" 2>/dev/null || true
 cp -p "$HOME/.config/kitty/kitty.app.icns" "$HOME/.config/kitty/backup/" 2>/dev/null || true
+cp -p "$HOME/.config/kitty/kitty-splits.zsh" "$HOME/.config/kitty/backup/" 2>/dev/null || true
+cp -p "$HOME/.config/kitty/p10k-kitty-integration.zsh" "$HOME/.config/kitty/backup/" 2>/dev/null || true
 ```
 
 If you already have a `shaders/` directory, back it up or merge it manually.
@@ -73,16 +78,19 @@ In Terminal:
 ```sh
 mkdir -p "$HOME/.config/kitty/shaders"
 rm -f "$HOME/.config/kitty/kitty.conf"
-ln -s "$HOME/kitty-configs/kitty.conf" "$HOME/.config/kitty/kitty.conf"
+cp "$HOME/kitty-configs/kitty.conf" "$HOME/.config/kitty/kitty.conf"
 cp "$HOME/kitty-configs/shaders/dim-inactive-windows.pipeline" \
   "$HOME/kitty-configs/shaders/inactive-saturation.slang" \
   "$HOME/.config/kitty/shaders/"
 cp "$HOME/kitty-configs/kitty.app.icns" "$HOME/.config/kitty/kitty.app.icns"
+cp "$HOME/kitty-configs/shell/kitty-splits.zsh" "$HOME/.config/kitty/kitty-splits.zsh"
+cp "$HOME/kitty-configs/powerlevel10k/kitty-integration.zsh" \
+  "$HOME/.config/kitty/p10k-kitty-integration.zsh"
 ```
 
-`kitty.conf` is a symlink, so changes that you pull into this repository take
-effect without another copy step. Do step 2 first, because `rm -f` removes your
-current `kitty.conf`.
+Do step 2 first, because these commands replace your current files. The
+`rm -f` command also removes a `kitty.conf` symlink from an earlier
+installation, so `cp` does not write through it into the repository.
 
 Kitty automatically reads `kitty.app.icns` from its configuration directory on
 macOS. It overrides the icon at startup; it does not replace the icon inside
@@ -107,9 +115,12 @@ Then add the helpers to the end of your `.zshrc`. The command adds the line
 only if it is not already there:
 
 ```sh
-grep -qF 'kitty-configs/shell/kitty-splits.zsh' "$ZSH_DIR/.zshrc" 2>/dev/null ||
-  printf '\n# Kitty pane-splitting helpers (sp, spr, spl)\nsource "$HOME/kitty-configs/shell/kitty-splits.zsh"\n' >> "$ZSH_DIR/.zshrc"
+grep -qF '.config/kitty/kitty-splits.zsh' "$ZSH_DIR/.zshrc" 2>/dev/null ||
+  printf '\n# Kitty pane-splitting helpers (sp, spr, spl)\nsource "$HOME/.config/kitty/kitty-splits.zsh"\n' >> "$ZSH_DIR/.zshrc"
 ```
+
+If your `.zshrc` has a line from an earlier installation that sources
+`kitty-configs/shell/kitty-splits.zsh`, remove that line.
 
 Load the helpers only from `.zshrc`, not from `.zshenv` or `.zprofile`. Zsh
 reads `.zshrc` for every interactive shell, which includes each new Kitty pane.
@@ -130,7 +141,7 @@ If you use Powerlevel10k, open `~/.p10k.zsh` in an editor. Add this line
 immediately after the line that starts with `unset -m`:
 
 ```zsh
-source "$HOME/kitty-configs/powerlevel10k/kitty-integration.zsh"
+source "$HOME/.config/kitty/p10k-kitty-integration.zsh"
 ```
 
 This enables Powerlevel10k's Kitty shell integration only when `TERM` is
@@ -159,10 +170,19 @@ rm -f /var/folders/*/*/*/com.apple.dock.iconcache
 killall Dock
 ```
 
+### Delete the repository (optional)
+
+After the installation works, you can delete `$HOME/kitty-configs`. Your
+configuration uses only the copies in `~/.config/kitty`.
+
 ### Apply later changes
 
-After you edit `kitty.conf` or pull changes, reload the configuration from
-inside Kitty with `Control+Command+,` or:
+Edit the files in `~/.config/kitty`. To get updates from this repository,
+clone or pull it again and do step 3 again. Step 3 replaces your local copies,
+so back up your changes first.
+
+After you edit `kitty.conf`, reload the configuration from inside Kitty with
+`Control+Command+,` or:
 
 ```sh
 kitten @ load-config
@@ -174,7 +194,7 @@ of these, quit Kitty with `Command+Q` and open it again.
 
 ## Pane shortcuts
 
-Source `shell/kitty-splits.zsh` as described above. It defines a single internal
+Source `~/.config/kitty/kitty-splits.zsh` as described above. It defines a single internal
 function, `_kitty_split`, and three aliases:
 
 | Command | Result |
@@ -277,7 +297,7 @@ file using the same name, then restart Kitty and clear the Dock cache if needed.
   names. If `spl` does not open a Kitty pane, run `type spl`. The output must
   be `spl is an alias for _kitty_split before`. If it is different, another
   definition loads after the helpers or `.zshrc` does not source
-  `shell/kitty-splits.zsh`. Do step 4 of the installation again, then run
+  `~/.config/kitty/kitty-splits.zsh`. Do step 4 of the installation again, then run
   `exec zsh`.
 - `hide_window_decorations no` keeps the native macOS title bar so the window can
   be moved, minimized, zoomed, and closed.

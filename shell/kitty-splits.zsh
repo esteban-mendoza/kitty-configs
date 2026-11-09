@@ -1,7 +1,8 @@
 # Kitty-only pane splitting helpers for Zsh.
-# Source this file from ~/.zshrc:
+# Install this file as ~/.config/kitty/kitty-splits.zsh and source it from
+# ~/.zshrc:
 #
-#   source "$HOME/kitty-configs/shell/kitty-splits.zsh"
+#   source "$HOME/.config/kitty/kitty-splits.zsh"
 #
 # Usage:
 #   sp             split below the current pane
