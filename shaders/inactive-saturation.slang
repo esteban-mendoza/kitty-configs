@@ -2,7 +2,7 @@
 
 import kitty_custom_shader_types;
 
-// Equivalente aproximado a inactive_pane_hsb.saturation = 0.75 en WezTerm.
+// Fracción de la saturación original que conservan los paneles inactivos.
 static const float INACTIVE_SATURATION = 0.75;
 static const bool DIM_CENTRAL_AREA_ONLY = true;
 static const bool INCLUDE_WINDOW_PADDING = true;

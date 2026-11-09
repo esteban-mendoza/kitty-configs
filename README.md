@@ -31,14 +31,32 @@ Tested with Kitty 0.50.0 and Zsh 5.9 on macOS.
 
 ## Installation
 
+### Before you start
+
+1. Install Kitty, but do not open it yet. If Kitty is open, quit it with
+   `Command+Q`. Closing the window is not enough.
+2. Open the macOS Terminal app (`/Applications/Utilities/Terminal.app`).
+   Run all commands in steps 1 to 5 in Terminal, in the same window.
+
+Kitty reads remote control, socket, and Option key settings only when it
+starts. If you install from inside a running Kitty, these settings do not take
+effect, and the `sp`, `spr`, and `spl` helpers and Option characters such as `@`
+and `#` do not work until you restart Kitty.
+
 ### 1. Clone the repository
 
+In Terminal:
+
 ```sh
-git clone <REPOSITORY_URL> "$HOME/kitty-configs"
-cd "$HOME/kitty-configs"
+git clone https://github.com/esteban-mendoza/kitty-configs.git "$HOME/kitty-configs"
 ```
 
+The commands below use the path `$HOME/kitty-configs`. If you clone the
+repository to a different location, change the paths.
+
 ### 2. Back up your current Kitty configuration
+
+In Terminal:
 
 ```sh
 mkdir -p "$HOME/.config/kitty/backup"
@@ -50,46 +68,56 @@ If you already have a `shaders/` directory, back it up or merge it manually.
 
 ### 3. Install the configuration
 
+In Terminal:
+
 ```sh
 mkdir -p "$HOME/.config/kitty/shaders"
 rm -f "$HOME/.config/kitty/kitty.conf"
-ln -s "$PWD/kitty.conf" "$HOME/.config/kitty/kitty.conf"
-cp shaders/dim-inactive-windows.pipeline shaders/inactive-saturation.slang \
+ln -s "$HOME/kitty-configs/kitty.conf" "$HOME/.config/kitty/kitty.conf"
+cp "$HOME/kitty-configs/shaders/dim-inactive-windows.pipeline" \
+  "$HOME/kitty-configs/shaders/inactive-saturation.slang" \
   "$HOME/.config/kitty/shaders/"
-cp kitty.app.icns "$HOME/.config/kitty/kitty.app.icns"
+cp "$HOME/kitty-configs/kitty.app.icns" "$HOME/.config/kitty/kitty.app.icns"
 ```
 
 `kitty.conf` is a symlink, so changes that you pull into this repository take
-effect without another copy step. Run step 2 first, because `rm -f` removes your
+effect without another copy step. Do step 2 first, because `rm -f` removes your
 current `kitty.conf`.
 
 Kitty automatically reads `kitty.app.icns` from its configuration directory on
 macOS. It overrides the icon at startup; it does not replace the icon inside
 `/Applications/kitty.app`.
 
-macOS caches Dock icons. If the old icon remains visible, run:
-
-```sh
-rm -f /var/folders/*/*/*/com.apple.dock.iconcache
-killall Dock
-```
-
 ### 4. Load the split helpers in Zsh
 
-Add this line to `~/.zshrc`:
+In Terminal, look for other `sp`, `spr`, or `spl` definitions, for example
+aliases for another terminal's split command:
 
-```zsh
-source "$HOME/kitty-configs/shell/kitty-splits.zsh"
+```sh
+ZSH_DIR="${ZDOTDIR:-$HOME}"
+grep -nE "(alias|function) +(sp|spr|spl)\b|^(sp|spr|spl) *\(\)" \
+  "$HOME/.zshenv" "$ZSH_DIR/.zshenv" "$ZSH_DIR/.zprofile" "$ZSH_DIR/.zshrc" 2>/dev/null
 ```
 
-Then reload Zsh:
+Remove each line that the command finds. Other definitions that load after
+the helpers replace them, and `sp`, `spr`, and `spl` then run a different
+command.
 
-```zsh
-exec zsh
+Then add the helpers to the end of your `.zshrc`. The command adds the line
+only if it is not already there:
+
+```sh
+grep -qF 'kitty-configs/shell/kitty-splits.zsh' "$ZSH_DIR/.zshrc" 2>/dev/null ||
+  printf '\n# Kitty pane-splitting helpers (sp, spr, spl)\nsource "$HOME/kitty-configs/shell/kitty-splits.zsh"\n' >> "$ZSH_DIR/.zshrc"
 ```
 
-The helpers require Kitty's remote control, which is already configured in
-`kitty.conf` through:
+Load the helpers only from `.zshrc`, not from `.zshenv` or `.zprofile`. Zsh
+reads `.zshrc` for every interactive shell, which includes each new Kitty pane.
+Keep the line at the end of `.zshrc`, after plugin managers and other files
+that define aliases. If you set `ZDOTDIR`, your `.zshrc` is
+`$ZDOTDIR/.zshrc`, not `~/.zshrc`.
+
+The helpers use Kitty's remote control, which `kitty.conf` turns on:
 
 ```conf
 allow_remote_control socket-only
@@ -98,8 +126,8 @@ listen_on unix:/tmp/kitty
 
 ### 5. Enable Powerlevel10k integration (optional)
 
-If you use Powerlevel10k, add this line inside `~/.p10k.zsh`, immediately after
-the line that starts with `unset -m`:
+If you use Powerlevel10k, open `~/.p10k.zsh` in an editor. Add this line
+immediately after the line that starts with `unset -m`:
 
 ```zsh
 source "$HOME/kitty-configs/powerlevel10k/kitty-integration.zsh"
@@ -108,16 +136,41 @@ source "$HOME/kitty-configs/powerlevel10k/kitty-integration.zsh"
 This enables Powerlevel10k's Kitty shell integration only when `TERM` is
 `xterm-kitty`, which prevents prompt redraw artifacts during resize.
 
-### 6. Apply the configuration
+### 6. Open Kitty and check the installation
 
-For most settings:
+1. Quit Terminal.
+2. Open Kitty.
+3. In Kitty, run:
+
+   ```zsh
+   type spl
+   ```
+
+   The output must be `spl is an alias for _kitty_split before`. If it is
+   different, do step 4 again.
+4. Run `spl`. A new pane opens on the left.
+5. Type `Option+2` and `Option+3`. On Latin American and Spanish layouts, Kitty
+   types `@` and `#`.
+
+macOS caches Dock icons. If the old icon is still visible, run this in Kitty:
+
+```sh
+rm -f /var/folders/*/*/*/com.apple.dock.iconcache
+killall Dock
+```
+
+### Apply later changes
+
+After you edit `kitty.conf` or pull changes, reload the configuration from
+inside Kitty with `Control+Command+,` or:
 
 ```sh
 kitten @ load-config
 ```
 
-Window decorations and the application icon are applied at startup. Quit Kitty
-and open it again if the title bar does not update.
+Reloading does not apply `macos_option_as_alt`, `allow_remote_control`,
+`listen_on`, window decorations, or the application icon. After you change one
+of these, quit Kitty with `Command+Q` and open it again.
 
 ## Pane shortcuts
 
@@ -159,7 +212,7 @@ enabled_layouts splits:split_axis=horizontal,...
 
 The text-editing shortcuts send the corresponding readline/Emacs control
 sequences, so they work in Zsh and in applications that use readline-style key
-bindings. The pane-focus shortcuts reproduce WezTerm's defaults.
+bindings.
 
 ## Customization
 
@@ -221,12 +274,11 @@ file using the same name, then restart Kitty and clear the Dock cache if needed.
   `left` is a good compromise: use the right Option key for `@`, `#`, and
   other layout characters, and use the left Option key for Alt shortcuts.
 - The `sp`, `spr`, and `spl` aliases replace any earlier aliases with the same
-  names. If `spl` still prints a WezTerm error such as
-  `failed to connect to Socket(".../wezterm/gui-sock-...")`, the helper file is
-  not sourced. Remove the old `wezterm cli split-pane` aliases from
-  `~/.zshenv` and `~/.zshrc`, make sure `~/.zshrc` sources
-  `shell/kitty-splits.zsh`, and run `exec zsh`. Run `type spl` to check. It
-  should print `spl is an alias for _kitty_split before`.
+  names. If `spl` does not open a Kitty pane, run `type spl`. The output must
+  be `spl is an alias for _kitty_split before`. If it is different, another
+  definition loads after the helpers or `.zshrc` does not source
+  `shell/kitty-splits.zsh`. Do step 4 of the installation again, then run
+  `exec zsh`.
 - `hide_window_decorations no` keeps the native macOS title bar so the window can
   be moved, minimized, zoomed, and closed.
 - The configuration intentionally leaves the font family at Kitty's default.
