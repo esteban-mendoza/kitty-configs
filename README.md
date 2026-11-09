@@ -52,11 +52,16 @@ If you already have a `shaders/` directory, back it up or merge it manually.
 
 ```sh
 mkdir -p "$HOME/.config/kitty/shaders"
-cp kitty.conf "$HOME/.config/kitty/kitty.conf"
+rm -f "$HOME/.config/kitty/kitty.conf"
+ln -s "$PWD/kitty.conf" "$HOME/.config/kitty/kitty.conf"
 cp shaders/dim-inactive-windows.pipeline shaders/inactive-saturation.slang \
   "$HOME/.config/kitty/shaders/"
 cp kitty.app.icns "$HOME/.config/kitty/kitty.app.icns"
 ```
+
+`kitty.conf` is a symlink, so changes that you pull into this repository take
+effect without another copy step. Run step 2 first, because `rm -f` removes your
+current `kitty.conf`.
 
 Kitty automatically reads `kitty.app.icns` from its configuration directory on
 macOS. It overrides the icon at startup; it does not replace the icon inside
@@ -195,8 +200,33 @@ file using the same name, then restart Kitty and clear the Dock cache if needed.
 
 ## Notes
 
-- `macos_option_as_alt yes` makes Option behave as Alt inside terminal
-  applications. It takes effect after restarting Kitty.
+- `macos_option_as_alt no` keeps Option's native macOS behavior, so characters
+  that your keyboard layout types with Option still work. For example, Option+2
+  types `@` and Option+3 types `#` on Latin American and Spanish layouts. The
+  Option shortcuts in this config still work because Kitty always treats Option
+  as Alt for its own mappings. Restart Kitty after you change this value.
+
+  Trade-off: with `no`, programs that run in Kitty do not get Alt+key from
+  Option. For example, Zsh `Alt+.` (insert last argument), Emacs `Meta` keys,
+  and Alt keys in tmux or Vim do not work from Option. Pick the value that
+  matches how you use the keyboard:
+
+  | Value | Option types layout characters | Option sends Alt to programs |
+  | --- | --- | --- |
+  | `no` (default here) | Both Option keys | Neither |
+  | `left` | Right Option only | Left Option only |
+  | `right` | Left Option only | Right Option only |
+  | `both` / `yes` | Neither | Both Option keys |
+
+  `left` is a good compromise: use the right Option key for `@`, `#`, and
+  other layout characters, and use the left Option key for Alt shortcuts.
+- The `sp`, `spr`, and `spl` aliases replace any earlier aliases with the same
+  names. If `spl` still prints a WezTerm error such as
+  `failed to connect to Socket(".../wezterm/gui-sock-...")`, the helper file is
+  not sourced. Remove the old `wezterm cli split-pane` aliases from
+  `~/.zshenv` and `~/.zshrc`, make sure `~/.zshrc` sources
+  `shell/kitty-splits.zsh`, and run `exec zsh`. Run `type spl` to check. It
+  should print `spl is an alias for _kitty_split before`.
 - `hide_window_decorations no` keeps the native macOS title bar so the window can
   be moved, minimized, zoomed, and closed.
 - The configuration intentionally leaves the font family at Kitty's default.
